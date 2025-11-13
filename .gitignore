@@ -1,0 +1,28 @@
+# Pliki Pythona tymczasowe
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+pyvenv.cfg
+
+# Bazy danych
+*.db
+Baza_danych/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Systemowe
+.DS_Store
+Thumbs.db
+
+# Klucze, hasła itp.
+*.key
+*.pem
+*.env
+klucz.txt
+klucz.pub
