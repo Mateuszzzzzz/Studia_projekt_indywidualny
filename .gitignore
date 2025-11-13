@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pdb
+
+# Wirtualne środowisko
+venv/
+env/
+pyvenv.cfg
+
+# Systemowe
+.DS_Store
+Thumbs.db
+
+# IDE / edytory
+.idea/
+.vscode/
+
+# Bazy danych (jeśli nie chcesz ich w repo)
+Baza_danych/
+*.db
+*.sqlite3
+
+# Cache i buildy
+*.log
+*.tmp
+*.bak
+
+# Foldery zewnętrzne / output
+__pycache__/
+*.egg-info/
+dist/
+build/
+
+# Ignoruj pliki środowiskowe systemu
+*.swp
