@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Python
 __pycache__/
 *.py[cod]
@@ -11,10 +12,31 @@ venv/
 env/
 pyvenv.cfg
 
+=======
+# Pliki Pythona tymczasowe
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+pyvenv.cfg
+
+# Bazy danych
+*.db
+Baza_danych/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+>>>>>>> f0e5fc74f925b656f3c89dcba42f85bd800d33ac
 # Systemowe
 .DS_Store
 Thumbs.db
 
+<<<<<<< HEAD
 # IDE / edytory
 .idea/
 .vscode/
@@ -37,3 +59,11 @@ build/
 
 # Ignoruj pliki środowiskowe systemu
 *.swp
+=======
+# Klucze, hasła itp.
+*.key
+*.pem
+*.env
+klucz.txt
+klucz.pub
+>>>>>>> f0e5fc74f925b656f3c89dcba42f85bd800d33ac
