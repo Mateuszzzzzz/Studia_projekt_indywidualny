@@ -298,12 +298,12 @@ while running:
                                           title_rect.bottom - counter_surface.get_height() - 5))
             y_offset = title_rect.bottom + 12
 
-            #Opis
+            # Opis
             desc_border_color = AKTYWNE_POLE if active_field == "desc" else FIOLET2
             desc_rect = pygame.Rect(inner_x, y_offset, form_rect.width - 40, 80)
             pygame.draw.rect(screen, (245, 245, 245), desc_rect, border_radius=8)
             pygame.draw.rect(screen, desc_border_color, desc_rect, 2, border_radius=8)
-            font_desc = get_fitting_font(input_desc, desc_rect.width, max_font=20)
+            font_desc = pygame.font.Font(font_path, 18)
             color_desc = CZARNY if input_desc != "Opis..." or active_field == "desc" else PLACEHOLDER_COLOR
 
             desc_lines = wrap_text(input_desc, font_desc, desc_rect.width - 15)
