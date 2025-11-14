@@ -37,11 +37,6 @@ Thumbs.db
 .idea/
 .vscode/
 
-# Bazy danych (jeśli nie chcesz ich w repo)
-Baza_danych/
-*.db
-*.sqlite3
-
 # Cache i buildy
 *.log
 *.tmp
