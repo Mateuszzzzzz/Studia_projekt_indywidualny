@@ -7,12 +7,12 @@ from walka import draw_walka
 
 pygame.init()
 
-#Ustawienia okna
+#Rozdzialka okna
 WIDTH, HEIGHT = 375, 667
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Lista zadań")
 
-#Kolory
+#Kolory w aplikacji
 BIALY = (255, 255, 255)
 CZARNY = (0, 0, 0)
 FIOLET = (96, 43, 96)
@@ -31,7 +31,7 @@ MAX_FONT_SIZE = 28
 MIN_FONT_SIZE = 12
 font_path = os.path.join(os.path.dirname(__file__), "Czcionka", "VT323-Regular.ttf")
 
-#Baza danych
+#Moja baza danych
 db_path = os.path.join("baza_danych", "baza_danych.db")
 os.makedirs("baza_danych", exist_ok=True)
 conn = sqlite3.connect(db_path)
@@ -58,7 +58,7 @@ title_rect = pygame.Rect((WIDTH - input_width)//2, HEIGHT//4 - title_height, inp
 desc_rect = pygame.Rect((WIDTH - input_width)//2, title_rect.bottom + 10, input_width, desc_height)
 reward_rect = pygame.Rect((WIDTH - input_width)//2, desc_rect.bottom + 10, input_width//2, reward_height)
 
-#Przycisk nwoego zadania
+#Przycisk plusik jaka grafika itd
 button_path = os.path.join(os.path.dirname(__file__), "Grafika", "Button.png")
 button_hover_path = os.path.join(os.path.dirname(__file__), "Grafika", "Button_hover.png")
 if os.path.exists(button_path):
@@ -72,13 +72,13 @@ else:
     button_hover_image = button_image.copy()
 button_rect = button_image.get_rect(topright=(WIDTH - 14, HEIGHT - 78))
 
-#Przyciski dodaj i anuluj
+#Przyciski dodawania i anulowania
 btn_width = int(WIDTH * 0.35)
 btn_height = 40
 add_rect = pygame.Rect(title_rect.x, reward_rect.bottom + 15, btn_width, btn_height)
 cancel_rect = pygame.Rect(title_rect.right - btn_width, reward_rect.bottom + 15, btn_width, btn_height)
 
-#Zakładki
+#Zakładki u góry jakie
 tabs = ["Zadania", "Sklep", "Walka"]
 active_tab = "Zadania"
 tab_height = 50
@@ -136,11 +136,12 @@ def complete_task(task_id):
     cur.execute("UPDATE zadania SET Czy_zaliczone = 1 WHERE ID_Zadania = ?", (task_id,))
     conn.commit()
 
+punkty_gracza = 0
 tasks = load_tasks()
 selected_task = None
 show_details = False
 
-#Pygame
+#rzeczy z pygame itd no silnik gierki taki prawie
 running = True
 clock = pygame.time.Clock()
 while running:
@@ -165,48 +166,63 @@ while running:
                     input_title, input_desc, input_reward = "Tytuł...", "Opis...", "0"
 
                 if show_input:
-                    if title_rect.collidepoint(event.pos):
+                    form_rect = pygame.Rect(WIDTH//2 - 150, HEIGHT//2 - 160, 300, 290)
+                    inner_x = form_rect.x + 20
+                    y_offset = form_rect.y + 20
+
+                    title_rect_input = pygame.Rect(inner_x, y_offset, form_rect.width - 40, 45)
+                    y_offset = title_rect_input.bottom + 12
+
+                    desc_rect_input = pygame.Rect(inner_x, y_offset, form_rect.width - 40, 80)
+                    y_offset = desc_rect_input.bottom + 10
+
+                    reward_rect_input = pygame.Rect(inner_x, y_offset, (form_rect.width - 40)//2, 38)
+                    y_offset = reward_rect_input.bottom + 10
+
+                    add_rect_input = pygame.Rect(inner_x, y_offset, (form_rect.width - 50)//2, 36)
+                    cancel_rect_input = pygame.Rect(add_rect_input.right + 20, y_offset, (form_rect.width - 50)//2, 36)
+
+                    if title_rect_input.collidepoint(event.pos):
                         active_field = "title"
                         if input_title == "Tytuł...":
                             input_title = ""
-                    elif desc_rect.collidepoint(event.pos):
+                    elif desc_rect_input.collidepoint(event.pos):
                         active_field = "desc"
                         if input_desc == "Opis...":
                             input_desc = ""
-                    elif reward_rect.collidepoint(event.pos):
+                    elif reward_rect_input.collidepoint(event.pos):
                         active_field = "reward"
                         if input_reward == "0":
                             input_reward = ""
-                    elif add_rect.collidepoint(event.pos) and input_title.strip() != "" and input_title != "Tytuł...":
+                    elif add_rect_input.collidepoint(event.pos) and input_title.strip() != "" and input_title != "Tytuł...":
                         reward_val = int(input_reward) if input_reward.isdigit() else 0
                         add_task_to_db(input_title, input_desc, reward_val)
                         tasks = load_tasks()
                         input_title, input_desc, input_reward = "Tytuł...", "Opis...", "0"
                         show_input = False
                         active_field = None
-                    elif cancel_rect.collidepoint(event.pos):
+                    elif cancel_rect_input.collidepoint(event.pos):
                         input_title, input_desc, input_reward = "Tytuł...", "Opis...", "0"
                         show_input = False
                         active_field = None
                     else:
-                        if not (title_rect.collidepoint(event.pos) or desc_rect.collidepoint(event.pos) or reward_rect.collidepoint(event.pos)):
+                        if not (title_rect_input.collidepoint(event.pos) or desc_rect_input.collidepoint(event.pos) or reward_rect_input.collidepoint(event.pos)):
                             active_field = None
-                else:
-                    for rect, task_id in task_positions:
-                        if rect.collidepoint(event.pos):
-                            cur.execute("SELECT * FROM zadania WHERE ID_Zadania = ?", (task_id,))
-                            selected_task = cur.fetchone()
-                            show_details = True
-                            break
 
+                else:
+                    if not show_details:
+                        for rect, task_id in task_positions:
+                            if rect.collidepoint(event.pos):
+                                cur.execute("SELECT * FROM zadania WHERE ID_Zadania = ?", (task_id,))
+                                selected_task = cur.fetchone()
+                                show_details = True
+                                break
 
         elif event.type == pygame.KEYDOWN and show_input and active_field:
             char = event.unicode
             if active_field == "title":
                 if event.key == pygame.K_BACKSPACE:
                     input_title = input_title[:-1]
-                    if input_title == "" and active_field == "title":
-                        pass
                 elif len(input_title) < MAX_TITLE_CHARS:
                     input_title += char
             elif active_field == "desc":
@@ -244,7 +260,10 @@ while running:
             color = BIALY if task["completed"] else CZARNY
             text_surface = task["font"].render(task["text"], True, color)
             border_rect = pygame.Rect(9, y, WIDTH - 18, 35)
-            pygame.draw.rect(screen, ZIELONY, border_rect, border_radius=8) if task["completed"] else pygame.draw.rect(screen, FIOLET2, border_rect, border_radius=8)
+            if task["completed"]:
+                pygame.draw.rect(screen, ZIELONY, border_rect, border_radius=8)
+            else:
+                pygame.draw.rect(screen, FIOLET2, border_rect, border_radius=8)
             pygame.draw.rect(screen, BIALY, border_rect, width = 2, border_radius=8)
             screen.blit(
                 text_surface,
@@ -256,7 +275,7 @@ while running:
             task_positions.append((border_rect, task["id"]))
             y += border_rect.height + 10
 
-        #Przycisk plus
+        #Przycisk plusik
         current_button_img = button_hover_image if button_rect.collidepoint(mouse_pos) and not show_details else button_image
         if show_input:
             button_dim = current_button_img.copy()
@@ -265,6 +284,7 @@ while running:
         else:
             screen.blit(current_button_img, button_rect)
 
+        #Formularz dodawania zadan
         if show_input:
             s = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             s.fill(PRZYCIEMNIENIE)
@@ -298,12 +318,12 @@ while running:
                                           title_rect.bottom - counter_surface.get_height() - 5))
             y_offset = title_rect.bottom + 12
 
-            # Opis
+            #Opis
             desc_border_color = AKTYWNE_POLE if active_field == "desc" else FIOLET2
             desc_rect = pygame.Rect(inner_x, y_offset, form_rect.width - 40, 80)
             pygame.draw.rect(screen, (245, 245, 245), desc_rect, border_radius=8)
             pygame.draw.rect(screen, desc_border_color, desc_rect, 2, border_radius=8)
-            font_desc = pygame.font.Font(font_path, 18)
+            font_desc = get_fitting_font(input_desc, desc_rect.width, max_font=20)
             color_desc = CZARNY if input_desc != "Opis..." or active_field == "desc" else PLACEHOLDER_COLOR
 
             desc_lines = wrap_text(input_desc, font_desc, desc_rect.width - 15)
@@ -329,7 +349,7 @@ while running:
             counter_surface = counter_font.render(f"Max: {MAX_REWARD}", True, SZARY)
             screen.blit(counter_surface, (reward_rect.right - counter_surface.get_width() - 5,
                                           reward_rect.bottom - counter_surface.get_height() - 5))
-            y_offset = reward_rect.bottom + 10  # mniejszy odstęp niż wcześniej
+            y_offset = reward_rect.bottom + 10
 
             #Przyciski
             add_enabled = input_title.strip() != "" and input_title != "Tytuł..."
@@ -350,7 +370,7 @@ while running:
             screen.blit(add_text, (add_rect.centerx - add_text.get_width()//2, add_rect.centery - add_text.get_height()//2))
             screen.blit(cancel_text, (cancel_rect.centerx - cancel_text.get_width()//2, cancel_rect.centery - cancel_text.get_height()//2))
 
-        #Szczegóły zadania
+        #Szczegóły klikniętego zadania
         if show_details and selected_task:
             s = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             s.fill(PRZYCIEMNIENIE)
@@ -366,7 +386,6 @@ while running:
             date = details_font.render(f"Dodano: {selected_task[4]}", True, CZARNY)
             desc_lines = wrap_text(f"Opis: {selected_task[2]}", details_font, details_rect.width - 40)
 
-            # wyśrodkowanie tekstu wewnątrz okna
             y_offset = details_rect.y + 20
             screen.blit(title, (details_rect.centerx - title.get_width() // 2, y_offset))
             y_offset += title.get_height() + 15
@@ -376,21 +395,17 @@ while running:
                 screen.blit(line_surface, (details_rect.x + 20, y_offset))
                 y_offset += line_surface.get_height() + 3
 
-            # Status zadania
+            #Status zadania czy ukonczone czy nie
             status_text = "Ukończone" if selected_task[5] == 1 else "Nieukończone"
             status = details_font.render(f"Status: {status_text}", True, CZARNY)
             screen.blit(status, (details_rect.x + 20, y_offset + 10))
 
-            # Nagroda
+            #Nagroda
             screen.blit(reward, (details_rect.x + 20, y_offset + 30))
-            # Data dodania
+            #Data dodania zadania w aplikacji
             screen.blit(date, (details_rect.x + 20, y_offset + 50))
 
-            # przycisk zamykania i wykonania
-            close_font = pygame.font.Font(font_path, 18)
-            close_text = close_font.render("Zamknij", True, BIALY)
-
-            # przyciski zamknij i wykonane
+            #Przyciski zamykania i wykonania
             close_font = pygame.font.Font(font_path, 18)
             close_text = close_font.render("Zamknij", True, BIALY)
 
@@ -404,6 +419,7 @@ while running:
                 close_rect = pygame.Rect(start_x + button_width + spacing, details_rect.bottom - 40, button_width,
                                          button_height)
 
+                #Kolory przycisków
                 done_color = FIOLET2 if done_rect.collidepoint(mouse_pos) else SZARY
                 close_color = FIOLET2 if close_rect.collidepoint(mouse_pos) else SZARY
 
@@ -422,18 +438,23 @@ while running:
                 screen.blit(close_text, (close_rect.centerx - close_text.get_width() // 2,
                                          close_rect.centery - close_text.get_height() // 2))
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if selected_task:
-                    if selected_task[5] == 0 and done_rect.collidepoint(mouse_pos):
-                        complete_task(selected_task[0])
-                        tasks = load_tasks()
-                        cur.execute("SELECT * FROM zadania WHERE ID_Zadania = ?", (selected_task[0],))
-                        selected_task = cur.fetchone()
-
-                    if close_rect.collidepoint(mouse_pos):
+            # obsługa kliknięcia w przyciski
+            for ev in [event] if 'event' in locals() else []:
+                if ev.type == pygame.MOUSEBUTTONDOWN or pygame.mouse.get_pressed()[0]:
+                    if selected_task and selected_task[5] == 0:
+                        if 'done_rect' in locals() and done_rect.collidepoint(mouse_pos):
+                            #Oznaczenie zadania jako wykonane
+                            complete_task(selected_task[0])
+                            tasks = load_tasks()
+                            try:
+                                punkty_gracza += int(selected_task[3])
+                            except Exception:
+                                pass
+                            cur.execute("SELECT * FROM zadania WHERE ID_Zadania = ?", (selected_task[0],))
+                            selected_task = cur.fetchone()
+                    if 'close_rect' in locals() and close_rect.collidepoint(mouse_pos):
                         show_details = False
                         selected_task = None
-
 
     elif active_tab == "Sklep":
         draw_sklep(screen, WIDTH, HEIGHT, font_path)
