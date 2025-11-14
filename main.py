@@ -64,18 +64,13 @@ if cur.fetchone()[0] == 0:
 cur.execute("SELECT Doświadczenie_Gracza FROM gracz LIMIT 1")
 row = cur.fetchone()
 punkty_gracza = row[0] if row else 0
-conn.commit()
 
 input_width = int(WIDTH * 0.85)
 title_height, desc_height, reward_height = 50, 80, 40
 MAX_TITLE_CHARS, MAX_DESC_CHARS, MAX_REWARD = 30, 60, 9999
 
-input_title, input_desc, input_reward = "Tytuł...", "Opis...", "0"
 active_field = None
 show_input = False
-title_rect = pygame.Rect((WIDTH - input_width)//2, HEIGHT//4 - title_height, input_width, title_height)
-desc_rect = pygame.Rect((WIDTH - input_width)//2, title_rect.bottom + 10, input_width, desc_height)
-reward_rect = pygame.Rect((WIDTH - input_width)//2, desc_rect.bottom + 10, input_width//2, reward_height)
 
 #Grafika i pozycja dla przycisku dodawania nowych zadan
 button_path = os.path.join(os.path.dirname(__file__), "Grafika", "Button.png")
@@ -90,12 +85,6 @@ if os.path.exists(button_hover_path):
 else:
     button_hover_image = button_image.copy()
 button_rect = button_image.get_rect(topright=(WIDTH - 14, HEIGHT - 78))
-
-#Ustawienia graficzne dla przyciskow dodaj i anuluj zadanie
-btn_width = int(WIDTH * 0.35)
-btn_height = 40
-add_rect = pygame.Rect(title_rect.x, reward_rect.bottom + 15, btn_width, btn_height)
-cancel_rect = pygame.Rect(title_rect.right - btn_width, reward_rect.bottom + 15, btn_width, btn_height)
 
 #Zakladki u gory ekranu w apce
 tabs = ["Zadania", "Sklep", "Walka"]
