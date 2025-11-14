@@ -7,9 +7,6 @@ from walka import draw_walka
 
 pygame.init()
 
-#Punkty za wykonywanie zadan dla uzytkownika
-punkty_gracza = 0
-
 #Rozdzialka jak dla telefonu okna aplikacji zeby potem sie nie bawic w zmienianie tego przy portowaniu
 WIDTH, HEIGHT = 375, 667
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -39,6 +36,7 @@ db_path = os.path.join("baza_danych", "baza_danych.db")
 os.makedirs("baza_danych", exist_ok=True)
 conn = sqlite3.connect(db_path)
 cur = conn.cursor()
+#zadanka w bazie
 cur.execute('''CREATE TABLE IF NOT EXISTS zadania (
     ID_Zadania INTEGER PRIMARY KEY AUTOINCREMENT,
     Nazwa_zadania TEXT,
@@ -47,6 +45,25 @@ cur.execute('''CREATE TABLE IF NOT EXISTS zadania (
     Data_dodania TEXT,
     Czy_zaliczone INTEGER DEFAULT 0
 )''')
+#staty gracza w bazie
+cur.execute('''CREATE TABLE IF NOT EXISTS gracz (
+    ID_Gracza INTEGER PRIMARY KEY AUTOINCREMENT,
+    Nazwa_Gracza TEXT,
+    Poziom_Gracza INTEGER DEFAULT 1,
+    Doświadczenie_Gracza INTEGER DEFAULT 0,
+    HP_Gracza INTEGER DEFAULT 25,
+    DMG_Gracza INTEGER DEFAULT 3
+)''')
+#stworzenie bazowego profilu gracza w bazie
+cur.execute("SELECT COUNT(*) FROM gracz")
+if cur.fetchone()[0] == 0:
+    cur.execute("INSERT INTO gracz (Nazwa_Gracza) VALUES ('Gracz_tymczasowy_wersji_alpha')")
+    conn.commit()
+
+#ustawienie wartosci punkty gracza na wartosc z bazy
+cur.execute("SELECT Doświadczenie_Gracza FROM gracz LIMIT 1")
+row = cur.fetchone()
+punkty_gracza = row[0] if row else 0
 conn.commit()
 
 input_width = int(WIDTH * 0.85)
@@ -139,8 +156,9 @@ def add_task_to_db(title, desc, reward):
                 (title, desc, reward, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     conn.commit()
 
-def complete_task(task_id):
+def complete_task(task_id, reward):
     cur.execute("UPDATE zadania SET Czy_zaliczone = 1 WHERE ID_Zadania = ?", (task_id,))
+    cur.execute("UPDATE gracz SET Doświadczenie_Gracza = Doświadczenie_Gracza + ?", (reward,))
     conn.commit()
 
 tasks = load_tasks()
@@ -219,7 +237,6 @@ while running:
                         show_input = False
                         active_field = None
                     else:
-                        # klik poza polami formularza -> brak focus
                         if not (title_rect_input.collidepoint(event.pos) or desc_rect_input.collidepoint(event.pos) or reward_rect_input.collidepoint(event.pos)):
                             active_field = None
 
@@ -234,10 +251,12 @@ while running:
                         done_rect = pygame.Rect(start_x, details_rect.bottom - 40, button_width, button_height)
                         close_rect = pygame.Rect(start_x + button_width + spacing, details_rect.bottom - 40, button_width, button_height)
                         if done_rect.collidepoint(event.pos):
-                            complete_task(selected_task[0])
+                            complete_task(selected_task[0], selected_task[3])
                             tasks = load_tasks()
                             try:
                                 punkty_gracza += int(selected_task[3])
+                                #to bedzie trzeba potem usunac, tylko do testow jest!!!!!!!!!!! #TESTY
+                                print(punkty_gracza)
                             except Exception:
                                 pass
                             cur.execute("SELECT * FROM zadania WHERE ID_Zadania = ?", (selected_task[0],))
@@ -254,7 +273,6 @@ while running:
                 else:
                     if not show_input and button_rect.collidepoint(event.pos) and not show_details:
                         show_input = True
-                        active_field = "title"
                         input_title, input_desc, input_reward = "Tytuł...", "Opis...", "0"
                     else:
                         for rect, task_id in task_positions:
@@ -362,7 +380,7 @@ while running:
             pygame.draw.rect(screen, (245, 245, 245), title_rect, border_radius=8)
             pygame.draw.rect(screen, title_border_color, title_rect, 2, border_radius=8)
             font_title = get_fitting_font(input_title, title_rect.width)
-            color_title = CZARNY if input_title != "Tytuł..." or active_field == "title" else PLACEHOLDER_COLOR
+            color_title = CZARNY if input_title != "Tytuł..." else PLACEHOLDER_COLOR
             screen.blit(font_title.render(input_title, True, color_title),
                         (title_rect.x + 10, title_rect.y + (title_rect.height - font_title.size(input_title)[1]) // 2))
             counter_surface = counter_font.render(f"{len(input_title)}/{MAX_TITLE_CHARS}", True, SZARY)
