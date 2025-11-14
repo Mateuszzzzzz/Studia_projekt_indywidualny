@@ -22,10 +22,6 @@ __pycache__/
 venv/
 pyvenv.cfg
 
-# Bazy danych
-*.db
-Baza_danych/
-
 # IDE
 .idea/
 *.iml
