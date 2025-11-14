@@ -197,7 +197,14 @@ while running:
 
             if active_tab == "Zadania":
                 if show_input:
-                    form_rect = pygame.Rect(WIDTH//2 - 150, HEIGHT//2 - 160, 300, 290)
+                    form_width = 300
+                    form_height = 290
+                    form_rect = pygame.Rect(
+                        (WIDTH - form_width) // 2,
+                        (HEIGHT - form_height) // 2,
+                        form_width,
+                        form_height
+                    )
                     inner_x = form_rect.x + 20
                     y_offset = form_rect.y + 20
 
@@ -421,7 +428,7 @@ while running:
 
             add_enabled = input_title.strip() != "" and input_title != "Tytuł..."
             add_rect = pygame.Rect(inner_x, y_offset, (form_rect.width - 50)//2, 36)
-            cancel_rect = pygame.Rect(add_rect.right + 20, y_offset, (form_rect.width - 50)//2, 36)
+            cancel_rect = pygame.Rect(add_rect.right + 8, y_offset, (form_rect.width - 50)//2, 36)
             add_color = PRZYCISK_HOVER if add_rect.collidepoint(mouse_pos) else PRZYCISK_BG
             cancel_color = PRZYCISK_HOVER if cancel_rect.collidepoint(mouse_pos) else PRZYCISK_BG
             text_color_add = CZARNY if add_rect.collidepoint(mouse_pos) else BIALY
