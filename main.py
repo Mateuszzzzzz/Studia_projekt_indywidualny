@@ -7,12 +7,15 @@ from walka import draw_walka
 
 pygame.init()
 
-# Rozdzielczość okna
+#Punkty za wykonywanie zadan dla uzytkownika
+punkty_gracza = 0
+
+#Rozdzialka jak dla telefonu okna aplikacji zeby potem sie nie bawic w zmienianie tego przy portowaniu
 WIDTH, HEIGHT = 375, 667
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Lista zadań")
 
-# Kolory
+#Kolory uzywane w apce
 BIALY = (255, 255, 255)
 CZARNY = (0, 0, 0)
 FIOLET = (96, 43, 96)
@@ -26,12 +29,12 @@ AKTYWNE_POLE = (0, 255, 0)
 PLACEHOLDER_COLOR = (160, 160, 160)
 BRAK_TYTULU_COLOR = (255, 0, 0)
 
-# Czcionki
+#Ustawienia dla czcionki (moze potem zmienic te vt323 na jakas autorska jak starczy czasu?)
 MAX_FONT_SIZE = 28
 MIN_FONT_SIZE = 12
 font_path = os.path.join(os.path.dirname(__file__), "Czcionka", "VT323-Regular.ttf")
 
-# Baza danych
+#Baza danych apki
 db_path = os.path.join("baza_danych", "baza_danych.db")
 os.makedirs("baza_danych", exist_ok=True)
 conn = sqlite3.connect(db_path)
@@ -46,7 +49,6 @@ cur.execute('''CREATE TABLE IF NOT EXISTS zadania (
 )''')
 conn.commit()
 
-# Pola i limity
 input_width = int(WIDTH * 0.85)
 title_height, desc_height, reward_height = 50, 80, 40
 MAX_TITLE_CHARS, MAX_DESC_CHARS, MAX_REWARD = 30, 60, 9999
@@ -54,13 +56,11 @@ MAX_TITLE_CHARS, MAX_DESC_CHARS, MAX_REWARD = 30, 60, 9999
 input_title, input_desc, input_reward = "Tytuł...", "Opis...", "0"
 active_field = None
 show_input = False
-
-# (globalne recty pomocnicze - nie używane do detekcji formularza)
 title_rect = pygame.Rect((WIDTH - input_width)//2, HEIGHT//4 - title_height, input_width, title_height)
 desc_rect = pygame.Rect((WIDTH - input_width)//2, title_rect.bottom + 10, input_width, desc_height)
 reward_rect = pygame.Rect((WIDTH - input_width)//2, desc_rect.bottom + 10, input_width//2, reward_height)
 
-# Przycisk plus
+#Grafika i pozycja dla przycisku dodawania nowych zadan
 button_path = os.path.join(os.path.dirname(__file__), "Grafika", "Button.png")
 button_hover_path = os.path.join(os.path.dirname(__file__), "Grafika", "Button_hover.png")
 if os.path.exists(button_path):
@@ -74,24 +74,24 @@ else:
     button_hover_image = button_image.copy()
 button_rect = button_image.get_rect(topright=(WIDTH - 14, HEIGHT - 78))
 
-# Przycisk Dodaj/Anuluj (placeholders)
+#Ustawienia graficzne dla przyciskow dodaj i anuluj zadanie
 btn_width = int(WIDTH * 0.35)
 btn_height = 40
 add_rect = pygame.Rect(title_rect.x, reward_rect.bottom + 15, btn_width, btn_height)
 cancel_rect = pygame.Rect(title_rect.right - btn_width, reward_rect.bottom + 15, btn_width, btn_height)
 
-# Zakładki
+#Zakladki u gory ekranu w apce
 tabs = ["Zadania", "Sklep", "Walka"]
 active_tab = "Zadania"
 tab_height = 50
 tab_width = WIDTH // len(tabs)
 tab_font = pygame.font.Font(font_path, 24)
 
-# Scroll dla listy zadań
+#Scroll listy zadan
 scroll_y = 0
-SCROLL_STEP = 40  # ilość pikseli na jeden "krok" scrolla
+SCROLL_STEP = 35
 
-# Funkcje pomocnicze
+#Funkcje pomocnicze
 def get_fitting_font(text, max_width, max_font=MAX_FONT_SIZE, min_font=MIN_FONT_SIZE):
     font_size = max_font
     while font_size >= min_font:
@@ -143,10 +143,6 @@ def complete_task(task_id):
     cur.execute("UPDATE zadania SET Czy_zaliczone = 1 WHERE ID_Zadania = ?", (task_id,))
     conn.commit()
 
-# Punkty gracza
-punkty_gracza = 0
-
-# Załaduj zadania
 tasks = load_tasks()
 selected_task = None
 show_details = False
@@ -159,39 +155,30 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        # Obsługa scrolla (kółko myszy) - tylko do przewijania listy
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button in (4, 5):
-            # scroll tylko na zakładce Zadania i gdy nie ma overlay (form/Details)
             if active_tab == "Zadania" and not show_input and not show_details:
-                # oblicz maksymalny scroll bazując na wysokości wszystkich zadań
                 item_h = 35
                 gap = 10
                 content_height = tab_height + 10 + len(tasks) * (item_h + gap)
                 visible_height = HEIGHT - (tab_height + 10)
                 max_scroll = max(0, content_height - visible_height)
-                if event.button == 4:  # wheel up
+                if event.button == 4:
                     scroll_y = max(0, scroll_y - SCROLL_STEP)
-                elif event.button == 5:  # wheel down
+                elif event.button == 5:
                     scroll_y = min(max_scroll, scroll_y + SCROLL_STEP)
 
-        # Wszystkie klikalne akcje - TYLKO na LPM (event.button == 1)
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            # Klik w zakładki (LPM)
             for i, tab in enumerate(tabs):
                 tab_rect = pygame.Rect(i * tab_width, 0, tab_width, tab_height)
                 if tab_rect.collidepoint(event.pos):
                     active_tab = tab
                     show_input = False
                     active_field = None
-                    # przy przełączeniu resetujemy scroll
                     scroll_y = 0
                     break
 
-            # Obsługa tylko dla zakładki Zadania
             if active_tab == "Zadania":
-                # Jeżeli jest otwarty formularz - obsługa pól i przycisków formularza
                 if show_input:
-                    # prostokąty identyczne jak w rysowaniu
                     form_rect = pygame.Rect(WIDTH//2 - 150, HEIGHT//2 - 160, 300, 290)
                     inner_x = form_rect.x + 20
                     y_offset = form_rect.y + 20
@@ -236,9 +223,7 @@ while running:
                         if not (title_rect_input.collidepoint(event.pos) or desc_rect_input.collidepoint(event.pos) or reward_rect_input.collidepoint(event.pos)):
                             active_field = None
 
-                # Jeżeli jest otwarte okno szczegółów - obsługa przycisków Done/Close (LPM)
                 elif show_details and selected_task:
-                    # zbuduj recty tak jak przy rysowaniu
                     details_rect = pygame.Rect(WIDTH//2 - 150, HEIGHT//2 - 120, 300, 240)
                     if selected_task[5] == 0:
                         button_width = 100
@@ -249,7 +234,6 @@ while running:
                         done_rect = pygame.Rect(start_x, details_rect.bottom - 40, button_width, button_height)
                         close_rect = pygame.Rect(start_x + button_width + spacing, details_rect.bottom - 40, button_width, button_height)
                         if done_rect.collidepoint(event.pos):
-                            # oznacz zadanie jako wykonane, dodaj punkty
                             complete_task(selected_task[0])
                             tasks = load_tasks()
                             try:
@@ -267,15 +251,12 @@ while running:
                             show_details = False
                             selected_task = None
 
-                # Jeżeli nic overlay nie blokuje - obsługa przycisku + i kliknięć w zadania
                 else:
-                    # kliknięcie w przycisk plus (otwieranie formularza) - tylko LPM
                     if not show_input and button_rect.collidepoint(event.pos) and not show_details:
                         show_input = True
                         active_field = "title"
                         input_title, input_desc, input_reward = "Tytuł...", "Opis...", "0"
                     else:
-                        # kliknięcie na zadanie - uwzględniamy scroll przy obliczaniu pozycji (task_positions powstają podczas rysowania)
                         for rect, task_id in task_positions:
                             if rect.collidepoint(event.pos):
                                 cur.execute("SELECT * FROM zadania WHERE ID_Zadania = ?", (task_id,))
@@ -283,7 +264,6 @@ while running:
                                 show_details = True
                                 break
 
-        # Obsługa tekstu wpisywanego w formularzu
         elif event.type == pygame.KEYDOWN and show_input and active_field:
             char = event.unicode
             if active_field == "title":
@@ -302,17 +282,13 @@ while running:
                 elif char.isdigit() and (input_reward == "" or int(input_reward + char) <= MAX_REWARD):
                     input_reward += char
 
-    # --- Rysowanie ---
     screen.fill(FIOLET)
-
-    # --- OGRANICZ RYSOWANIE LISTY do obszaru poniżej zakładek ---
     task_area = pygame.Rect(0, tab_height, WIDTH, HEIGHT - tab_height)
     screen.set_clip(task_area)
 
     task_positions = []
 
     if active_tab == "Zadania":
-        # lista zadań (z uwzględnieniem scroll_y)
         y = tab_height + 10 - scroll_y
         item_h = 35
         gap = 10
@@ -329,20 +305,16 @@ while running:
             task_positions.append((border_rect, task["id"]))
             y += item_h + gap
 
-        # aktualizacja maksymalnego scrolla (na potrzeby gdy elementów przybywa)
         content_height = tab_height + 10 + len(tasks) * (item_h + gap)
         visible_height = HEIGHT - (tab_height + 10)
         max_scroll = max(0, content_height - visible_height)
-        # Trzymaj scroll_y w zakresie
         if scroll_y < 0:
             scroll_y = 0
         if scroll_y > max_scroll:
             scroll_y = max_scroll
 
-    # przywróć normalne rysowanie (teraz elementi rysowane poza obszarem clip będą widoczne)
     screen.set_clip(None)
 
-    # Zakładki (rysujemy po liście, ale lista miała clip więc nie nachodziła na zakładki)
     for i, tab in enumerate(tabs):
         tab_rect = pygame.Rect(i * tab_width, 0, tab_width, tab_height)
         if tab == active_tab:
@@ -354,11 +326,10 @@ while running:
         pygame.draw.rect(screen, CZARNY, tab_rect, 2)
         text_surface = tab_font.render(tab, True, CZARNY)
         screen.blit(text_surface, (tab_rect.centerx - text_surface.get_width() // 2,
-                                   tab_rect.centery - text_surface.get_height() // 2))
 
-    # Gdy aktywna zakładka Zadania - rysowanie plusika, formularza i szczegółów (overlayy)
+                                   tab_rect.centery - text_surface.get_height() // 2))
+    #Formularz dodawnia nowych zadan
     if active_tab == "Zadania":
-        # przycisk plus
         current_button_img = button_hover_image if button_rect.collidepoint(mouse_pos) and not show_details else button_image
         if show_input:
             button_dim = current_button_img.copy()
@@ -367,7 +338,6 @@ while running:
         else:
             screen.blit(current_button_img, button_rect)
 
-        # Formularz (overlay)
         if show_input:
             s = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             s.fill(PRZYCIEMNIENIE)
@@ -381,7 +351,6 @@ while running:
             inner_x = form_rect.x + 20
             y_offset = form_rect.y + 20
 
-            # Tytuł
             if active_field != "title" and (input_title.strip() == ""):
                 title_border_color = BRAK_TYTULU_COLOR
             elif active_field == "title":
@@ -401,7 +370,6 @@ while running:
                                           title_rect.bottom - counter_surface.get_height() - 5))
             y_offset = title_rect.bottom + 12
 
-            # Opis
             desc_border_color = AKTYWNE_POLE if active_field == "desc" else FIOLET2
             desc_rect = pygame.Rect(inner_x, y_offset, form_rect.width - 40, 80)
             pygame.draw.rect(screen, (245, 245, 245), desc_rect, border_radius=8)
@@ -420,7 +388,6 @@ while running:
                                           desc_rect.bottom - counter_surface.get_height() - 5))
             y_offset = desc_rect.bottom + 10
 
-            # Nagroda
             reward_border_color = AKTYWNE_POLE if active_field == "reward" else FIOLET2
             reward_rect = pygame.Rect(inner_x, y_offset, (form_rect.width - 40)//2, 38)
             pygame.draw.rect(screen, (245, 245, 245), reward_rect, border_radius=8)
@@ -434,7 +401,6 @@ while running:
                                           reward_rect.bottom - counter_surface.get_height() - 5))
             y_offset = reward_rect.bottom + 10
 
-            # Przyciski
             add_enabled = input_title.strip() != "" and input_title != "Tytuł..."
             add_rect = pygame.Rect(inner_x, y_offset, (form_rect.width - 50)//2, 36)
             cancel_rect = pygame.Rect(add_rect.right + 20, y_offset, (form_rect.width - 50)//2, 36)
@@ -453,7 +419,7 @@ while running:
             screen.blit(add_text, (add_rect.centerx - add_text.get_width()//2, add_rect.centery - add_text.get_height()//2))
             screen.blit(cancel_text, (cancel_rect.centerx - cancel_text.get_width()//2, cancel_rect.centery - cancel_text.get_height()//2))
 
-        # Okno szczegółów zadania
+        #Szczegoly dla kliknietego zadania na liscie
         if show_details and selected_task:
             s = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
             s.fill(PRZYCIEMNIENIE)
