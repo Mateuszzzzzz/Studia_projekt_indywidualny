@@ -26,6 +26,7 @@ PRZYCISK_HOVER = (29, 162, 84)
 AKTYWNE_POLE = (0, 255, 0)
 JASNY_SZARY = (160, 160, 160)
 BRAK_TYTULU_COLOR = (255, 0, 0)
+BRAZ = (102, 57, 49)
 
 #Ustawienia dla czcionki (moze potem zmienic te vt323 na jakas autorska jak starczy czasu?)
 MAX_FONT_SIZE = 23
@@ -264,8 +265,6 @@ while running:
                             tasks = load_tasks()
                             try:
                                 punkty_gracza += int(selected_task[3])
-                                #to bedzie trzeba potem usunac, tylko do testow jest!!!!!!!!!!! #TESTY
-                                print(punkty_gracza)
                             except Exception:
                                 pass
                             cur.execute("SELECT * FROM zadania WHERE ID_Zadania = ?", (selected_task[0],))
@@ -309,10 +308,14 @@ while running:
                 elif char.isdigit() and (input_reward == "" or int(input_reward + char) <= MAX_REWARD):
                     input_reward += char
 
-    screen.fill(FIOLET)
-    task_area = pygame.Rect(0, tab_height, WIDTH, HEIGHT - tab_height)
-    screen.set_clip(task_area)
 
+    task_area = pygame.Rect(0, tab_height, WIDTH, HEIGHT - tab_height)
+    if active_tab == "Zadania":
+        screen.fill(FIOLET)
+    elif active_tab == "Sklep":
+        screen.fill(BRAZ)
+    elif active_tab == "Walka":
+        screen.fill(JASNY_SZARY)
     task_positions = []
 
     if active_tab == "Zadania":
@@ -543,7 +546,7 @@ while running:
                                          close_rect.centery - close_text.get_height() // 2))
 
     elif active_tab == "Sklep":
-        draw_sklep(screen, WIDTH, HEIGHT, font_path)
+        draw_sklep(screen, WIDTH, HEIGHT, font_path, punkty_gracza)
     elif active_tab == "Walka":
         draw_walka(screen, WIDTH, HEIGHT, font_path)
 
