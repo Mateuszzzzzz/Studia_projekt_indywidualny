@@ -271,6 +271,8 @@ while running:
                             try:
                                 punkty_gracza += int(selected_task[3])
                                 ukonczone_zadania += 1
+                                cur.execute("UPDATE gracz SET Ukonczone_Zadania = ?", (ukonczone_zadania,))
+                                conn.commit()
                             except Exception:
                                 pass
                             cur.execute("SELECT * FROM zadania WHERE ID_Zadania = ?", (selected_task[0],))

@@ -2,7 +2,7 @@ import pygame
 import os
 import random
 
-ILE_ITEMOW = 4
+ILE_ITEMOW = 17
 ZIELONY = (29, 162, 84)
 ZIELONY2 = (39, 46, 42)
 CZARNY = (0, 0, 0)
