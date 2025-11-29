@@ -55,7 +55,8 @@ cur.execute('''CREATE TABLE IF NOT EXISTS gracz (
     Poziom_Gracza INTEGER DEFAULT 1,
     Doświadczenie_Gracza INTEGER DEFAULT 0,
     HP_Gracza INTEGER DEFAULT 25,
-    DMG_Gracza INTEGER DEFAULT 3
+    DMG_Gracza INTEGER DEFAULT 3,
+    Ukonczone_Zadania INTEGER DEFAULT 0
 )''')
 #stworzenie bazowego profilu gracza w bazie
 cur.execute("SELECT COUNT(*) FROM gracz")
@@ -63,7 +64,11 @@ if cur.fetchone()[0] == 0:
     cur.execute("INSERT INTO gracz (Nazwa_Gracza) VALUES ('Gracz_tymczasowy_wersji_alpha')")
     conn.commit()
 
-#ustawienie wartosci punkty gracza na wartosc z bazy
+#ustawienie wartosci punkty gracza oraz ile zadan wykonal na wartosc z bazy
+cur.execute("SELECT Ukonczone_Zadania FROM gracz LIMIT 1")
+row = cur.fetchone()
+ukonczone_zadania = row[0] if row else 0
+
 cur.execute("SELECT Doświadczenie_Gracza FROM gracz LIMIT 1")
 row = cur.fetchone()
 punkty_gracza = row[0] if row else 0
@@ -265,6 +270,7 @@ while running:
                             tasks = load_tasks()
                             try:
                                 punkty_gracza += int(selected_task[3])
+                                ukonczone_zadania += 1
                             except Exception:
                                 pass
                             cur.execute("SELECT * FROM zadania WHERE ID_Zadania = ?", (selected_task[0],))
@@ -315,7 +321,7 @@ while running:
     elif active_tab == "Sklep":
         screen.fill(BRAZ)
     elif active_tab == "Walka":
-        screen.fill(JASNY_SZARY)
+        screen.fill(CZARNY)
     task_positions = []
 
     if active_tab == "Zadania":
@@ -546,7 +552,7 @@ while running:
                                          close_rect.centery - close_text.get_height() // 2))
 
     elif active_tab == "Sklep":
-        draw_sklep(screen, WIDTH, HEIGHT, font_path, punkty_gracza)
+        draw_sklep(screen, WIDTH, HEIGHT, font_path, punkty_gracza, ukonczone_zadania)
     elif active_tab == "Walka":
         draw_walka(screen, WIDTH, HEIGHT, font_path)
 
