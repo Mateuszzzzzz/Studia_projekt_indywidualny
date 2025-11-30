@@ -2,7 +2,7 @@ import pygame
 import os
 import random
 
-ILE_ITEMOW = 17
+ILE_ITEMOW = 101
 ZIELONY = (29, 162, 84)
 ZIELONY2 = (39, 46, 42)
 CZARNY = (0, 0, 0)
@@ -389,5 +389,6 @@ def draw_sklep(screen, WIDTH, HEIGHT, font_path, punkty_gracza, ukonczone_zadani
         shop_path = os.path.join(os.path.dirname(__file__), "Grafika", "Sklep_blokada4.png")
         draw_sklep.shop_block4 = pygame.image.load(shop_path).convert_alpha()
         screen.blit(draw_sklep.shop_block4, (10, 606))
+
 
 

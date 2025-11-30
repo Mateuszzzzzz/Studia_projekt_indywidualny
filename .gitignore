@@ -41,12 +41,14 @@ Thumbs.db
 *.log
 *.tmp
 *.bak
+*.aseprite
 
 # Foldery zewnętrzne / output
 __pycache__/
 *.egg-info/
 dist/
 build/
+Grafika/!tymczasowe_usun_potem.aseprite
 
 # Ignoruj pliki środowiskowe systemu
 *.swp
