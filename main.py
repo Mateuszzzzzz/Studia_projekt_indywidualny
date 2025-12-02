@@ -56,7 +56,8 @@ cur.execute('''CREATE TABLE IF NOT EXISTS gracz (
     Doświadczenie_Gracza INTEGER DEFAULT 0,
     HP_Gracza INTEGER DEFAULT 25,
     DMG_Gracza INTEGER DEFAULT 3,
-    Ukonczone_Zadania INTEGER DEFAULT 0
+    Ukonczone_Zadania INTEGER DEFAULT 0,
+    Obecny_Wróg INTEGER DEFAULT 1
 )''')
 #stworzenie bazowego profilu gracza w bazie
 cur.execute("SELECT COUNT(*) FROM gracz")
@@ -64,7 +65,7 @@ if cur.fetchone()[0] == 0:
     cur.execute("INSERT INTO gracz (Nazwa_Gracza) VALUES ('Gracz_tymczasowy_wersji_alpha')")
     conn.commit()
 
-#ustawienie wartosci punkty gracza oraz ile zadan wykonal na wartosc z bazy
+#wziecie wartosci z bazy danych
 cur.execute("SELECT Ukonczone_Zadania FROM gracz LIMIT 1")
 row = cur.fetchone()
 ukonczone_zadania = row[0] if row else 0
@@ -72,6 +73,18 @@ ukonczone_zadania = row[0] if row else 0
 cur.execute("SELECT Doświadczenie_Gracza FROM gracz LIMIT 1")
 row = cur.fetchone()
 punkty_gracza = row[0] if row else 0
+
+cur.execute("SELECT DMG_Gracza FROM gracz LIMIT 1")
+row = cur.fetchone()
+DMG_Gracza = row[0] if row else 0
+
+cur.execute("SELECT HP_Gracza FROM gracz LIMIT 1")
+row = cur.fetchone()
+HP_Gracza = row[0] if row else 0
+
+cur.execute("SELECT Obecny_Wróg FROM gracz LIMIT 1")
+row = cur.fetchone()
+Wrog_ID = row[0] if row else 0
 
 input_width = int(WIDTH * 0.85)
 title_height, desc_height, reward_height = 50, 80, 40
@@ -554,9 +567,11 @@ while running:
                                          close_rect.centery - close_text.get_height() // 2))
 
     elif active_tab == "Sklep":
-        draw_sklep(screen, WIDTH, HEIGHT, font_path, punkty_gracza, ukonczone_zadania)
+        cur.execute("SELECT Doświadczenie_Gracza, DMG_Gracza, HP_Gracza FROM gracz LIMIT 1")
+        punkty_gracza, DMG_Gracza, HP_Gracza = cur.fetchone()
+        draw_sklep(screen, WIDTH, HEIGHT, font_path, punkty_gracza, ukonczone_zadania, DMG_Gracza, HP_Gracza)
     elif active_tab == "Walka":
-        draw_walka(screen, WIDTH, HEIGHT, font_path)
+        draw_walka(screen, WIDTH, HEIGHT, font_path, DMG_Gracza, HP_Gracza, Wrog_ID)
 
     pygame.display.flip()
     clock.tick(60)
