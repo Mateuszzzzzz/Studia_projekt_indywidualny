@@ -12,14 +12,14 @@ enemy_stats = {
     1: {"DMG": 2, "HP": 30, "Nazwa": "Niebieski szlam"},
     2: {"DMG": 5, "HP": 50, "Nazwa": "Szkielet"},
     3: {"DMG": 15, "HP": 160, "Nazwa": "Wielki pająk"},
-    4: {"DMG": 33, "HP": 400, "Nazwa": "Kamienny golem"},
+    4: {"DMG": 33, "HP": 400, "Nazwa": "Golem"},
     5: {"DMG": 65, "HP": 890, "Nazwa": "Żrąca Kostka"},
     6: {"DMG": 90, "HP": 1600, "Nazwa": "Głębinowy Koszmar"},
     7: {"DMG": 140, "HP": 4000, "Nazwa": "Szalony Arcymag"},
     8: {"DMG": 250, "HP": 9999, "Nazwa": "Pozaziemska Abominacja"},
     9: {"DMG": 630, "HP": 25000, "Nazwa": "Serce Świata"},
-    10: {"DMG": 2150, "HP": 100000, "Nazwa": "Stworzyciel"},
-    11: {"DMG": 6000, "HP": 500000, "Nazwa": "Źródło"},
+    10: {"DMG": 2150, "HP": 100000, "Nazwa": "Śniący"},
+    11: {"DMG": 6000, "HP": 500000, "Nazwa": "Przebudzony"},
 }
 
 
@@ -121,9 +121,11 @@ def draw_walka(screen, WIDTH, HEIGHT, font_path, DMG_Gracza, HP_Gracza, Wrog_ID)
 
     if os.path.isfile(enemy_img_path):
         enemy_img = pygame.image.load(enemy_img_path).convert_alpha()
-
         enemy_x = (WIDTH - enemy_img.get_width()) // 2
-        enemy_y = 100
+        if Wrog_ID!=9:
+            enemy_y = 100
+        else:
+            enemy_y = 70
 
         screen.blit(enemy_img, (enemy_x, enemy_y))
 
