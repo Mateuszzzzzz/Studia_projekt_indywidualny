@@ -571,7 +571,7 @@ while running:
         punkty_gracza, DMG_Gracza, HP_Gracza = cur.fetchone()
         draw_sklep(screen, WIDTH, HEIGHT, font_path, punkty_gracza, ukonczone_zadania, DMG_Gracza, HP_Gracza)
     elif active_tab == "Walka":
-        draw_walka(screen, WIDTH, HEIGHT, font_path, DMG_Gracza, HP_Gracza, Wrog_ID)
+        draw_walka(screen, WIDTH, HEIGHT, font_path, DMG_Gracza, HP_Gracza)
 
     pygame.display.flip()
     clock.tick(60)
